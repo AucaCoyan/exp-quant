@@ -20,7 +20,7 @@ def get_intraday(symbol, interval='15min'):
     """
     function = 'TIME_SERIES_INTRADAY' 
 
-# concatenar el link
+    # concatenar el link
     urlBase = 'https://www.alphavantage.co/query'
     url = urlBase+ '?function=' + function
     url += '&symbol=' + str(symbol)
@@ -33,13 +33,10 @@ def get_intraday(symbol, interval='15min'):
     # acá hago el llamado/request
 
     r = requests.get(url)
-    # r = requests.get(url)
-    print(r.json())
 
     data = r.json()['Time Series (15min)'] 
-
     dataDF = pd.DataFrame.from_dict(data, orient='index')
-    dataDF
+    return dataDF
 
 def get_daily(symbol, output='compact'):
     """Get daily values from Alphavantage
@@ -60,12 +57,17 @@ def get_daily(symbol, output='compact'):
     # acá hago el llamado/request
 
     r = requests.get(url)
-    # r = requests.get(url)
-    print(r.json())
 
     data = r.json()['Time Series (Daily)']
     dataDF = pd.DataFrame.from_dict(data, orient='index')
-    dataDF
+    return dataDF
+
+def leerExcel(nombreArchivo):
+    data = pd.read_excel(nombreArchivo)
+    data = data.sort_values('timestamp', ascending=True)
+    data.set_index('timestamp', inplace=True)
+    return data
 
 if __name__ == "__main__":
-    get_daily('AAPL')
+    print(get_daily('AAPL'))
+    pass
