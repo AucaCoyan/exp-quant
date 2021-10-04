@@ -68,6 +68,14 @@ def leerExcel(nombreArchivo):
     data.set_index('timestamp', inplace=True)
     return data
 
+def arreglarData(data):
+    """Toma una matriz y la transforma para que la pueda usar mejor
+    Orden:
+    Open - High - Low - Close - Volume (MlnDollars)
+
+    Args:
+        data ([type]): [description]
+    """
 if __name__ == "__main__":
     print(get_daily('AAPL'))
     pass
