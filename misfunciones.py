@@ -11,6 +11,17 @@ def token():
     tokenlist = ['2RG2NEF3IPXMIPX3', 'ZOW97SMSE5U3FPYU']
     return tokenlist[1]
 
+
+def arreglarData(data):
+    """Toma una matriz y la transforma para que la pueda usar mejor
+    Orden:
+    Open - High - Low - Close - Volume (MlnDollars)
+
+    Args:
+        data ([type]): [description]
+    """
+
+
 def get_intraday(symbol, interval='15min'):
     """Get intraday values from Alphavantage
 
@@ -38,6 +49,7 @@ def get_intraday(symbol, interval='15min'):
     dataDF = pd.DataFrame.from_dict(data, orient='index')
     return dataDF
 
+
 def get_daily(symbol, output='compact'):
     """Get daily values from Alphavantage
 
@@ -60,7 +72,30 @@ def get_daily(symbol, output='compact'):
 
     data = r.json()['Time Series (Daily)']
     dataDF = pd.DataFrame.from_dict(data, orient='index')
+    dataDF['Open'] = dataDF['1. open'].pd.astype(float)
+    # (['1. open', '2. high', '3. low', '4. close'], 1
     return dataDF
+
+
+def AgregarMediaMovil(data, periodos):
+    """Agrega una columna donde pone la media movil
+
+    Args:
+        data (df de pandas): [description]
+        periodos (int): cantidad de periodos para calcular el MA
+    """
+    pass
+
+
+def calcDifVolumen(data):
+    """Agrega al df existente una columna más y mide la diferencia de volumen existente entre la rueda de hoy y la rueda de ayer
+
+    Args:
+        data ([df de pandas]): tabla de OHLCV
+    """
+
+    # Primer paso verificar si está la columna Diferencia de Volumen
+    pass
 
 def leerExcel(nombreArchivo):
     data = pd.read_excel(nombreArchivo)
@@ -68,14 +103,7 @@ def leerExcel(nombreArchivo):
     data.set_index('timestamp', inplace=True)
     return data
 
-def arreglarData(data):
-    """Toma una matriz y la transforma para que la pueda usar mejor
-    Orden:
-    Open - High - Low - Close - Volume (MlnDollars)
 
-    Args:
-        data ([type]): [description]
-    """
 if __name__ == "__main__":
     print(get_daily('AAPL'))
     pass
