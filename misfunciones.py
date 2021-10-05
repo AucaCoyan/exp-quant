@@ -63,22 +63,26 @@ def get_daily(symbol, output='compact'):
     url += '&outputsize=compact'
     url += '&apikey=' + token()
     
-    # print(url)
-    # print('https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=IBM&interval=5min&apikey=demo')
-    # acá hago el llamado/request
-
     r = requests.get(url)
 
+    # pido solamente los datos de precios
     data = r.json()['Time Series (Daily)']
-    print(type(data))
+    # le doy formato en pandas a partir del JSON
     dataDF = pd.DataFrame.from_dict(data, orient='index')
+    # le doy formato float a la tabla OHLCV
     dataDF['1. open'] =   dataDF['1. open'].astype(float)
     dataDF['2. high'] =   dataDF['2. high'].astype(float)
     dataDF['3. low'] =    dataDF['3. low'].astype(float)
     dataDF['4. close'] =  dataDF['4. close'].astype(float)
     dataDF['5. volume'] = dataDF['5. volume'].astype(int)
-    # (['1. open', '2. high', '3. low', '4. close'], 1
-    print(dataDF.dtypes)
+    # renombro las columnas a OHLCV
+    dataDF = dataDF.rename(columns={
+        '1. open': 'open',
+        '2. high': 'high',
+        '3. low': 'low',
+        '4. close': 'close',
+        '5. volume': 'volume'}
+        )
     return dataDF
 
 
@@ -99,12 +103,13 @@ def calcDifVolumen(data):
         data ([df de pandas]): tabla de OHLCV
     """
 
-    # Primer paso verificar si está la columna Diferencia de Volumen
-    if '5. volume' not in data.columns:
+    # primero fijarse si la columna 'volume' existe
+    # luego paso verificar si está la columna Diferencia de Volumen
+    if 'volume' not in data.columns:
         raise Exception("No se encontró la columna 'volume' ")
     else:
         # Luego agrego la columna con diferencia de volumen
-        data['difVolumen'] = data['5. volume'].diff()
+        data['difVolumen'] = data['volume'].diff()
         return data
 
 def leerExcel(nombreArchivo):
