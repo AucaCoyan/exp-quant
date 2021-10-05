@@ -19,6 +19,21 @@ def arreglarData(data):
     Args:
         data ([type]): [description]
     """
+    # le doy formato float a la tabla OHLCV
+    data['1. open'] =   data['1. open'].astype(float)
+    data['2. high'] =   data['2. high'].astype(float)
+    data['3. low'] =    data['3. low'].astype(float)
+    data['4. close'] =  data['4. close'].astype(float)
+    data['5. volume'] = (data['5. volume'].astype(int)/1000000).round(2)
+    # renombro las columnas a OHLCV
+    data = data.rename(columns={
+        '1. open': 'open',
+        '2. high': 'high',
+        '3. low': 'low',
+        '4. close': 'close',
+        '5. volume': 'volume'}
+        )
+    return data
 
 
 def get_intraday(symbol, interval='15min'):
@@ -46,6 +61,7 @@ def get_intraday(symbol, interval='15min'):
 
     data = r.json()['Time Series (15min)']
     dataDF = pd.DataFrame.from_dict(data, orient='index')
+    dataDF = arreglarData(dataDF)
     return dataDF
 
 
@@ -69,20 +85,8 @@ def get_daily(symbol, output='compact'):
     data = r.json()['Time Series (Daily)']
     # le doy formato en pandas a partir del JSON
     dataDF = pd.DataFrame.from_dict(data, orient='index')
-    # le doy formato float a la tabla OHLCV
-    dataDF['1. open'] =   dataDF['1. open'].astype(float)
-    dataDF['2. high'] =   dataDF['2. high'].astype(float)
-    dataDF['3. low'] =    dataDF['3. low'].astype(float)
-    dataDF['4. close'] =  dataDF['4. close'].astype(float)
-    dataDF['5. volume'] = dataDF['5. volume'].astype(int)
-    # renombro las columnas a OHLCV
-    dataDF = dataDF.rename(columns={
-        '1. open': 'open',
-        '2. high': 'high',
-        '3. low': 'low',
-        '4. close': 'close',
-        '5. volume': 'volume'}
-        )
+    # lo mando a arreglar data
+    dataDF = arreglarData(dataDF)
     return dataDF
 
 
