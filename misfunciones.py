@@ -1,13 +1,12 @@
 import pandas as pd
 import requests
-import json
+# import json
 
 def token():
     """ 
     # Definicion de token
     TODO: add secrets library
     """
-    
     tokenlist = ['2RG2NEF3IPXMIPX3', 'ZOW97SMSE5U3FPYU']
     return tokenlist[1]
 
@@ -45,7 +44,7 @@ def get_intraday(symbol, interval='15min'):
 
     r = requests.get(url)
 
-    data = r.json()['Time Series (15min)'] 
+    data = r.json()['Time Series (15min)']
     dataDF = pd.DataFrame.from_dict(data, orient='index')
     return dataDF
 
@@ -71,9 +70,15 @@ def get_daily(symbol, output='compact'):
     r = requests.get(url)
 
     data = r.json()['Time Series (Daily)']
+    print(type(data))
     dataDF = pd.DataFrame.from_dict(data, orient='index')
-    dataDF['Open'] = dataDF['1. open'].pd.astype(float)
+    dataDF['1. open'] =   dataDF['1. open'].astype(float)
+    dataDF['2. high'] =   dataDF['2. high'].astype(float)
+    dataDF['3. low'] =    dataDF['3. low'].astype(float)
+    dataDF['4. close'] =  dataDF['4. close'].astype(float)
+    dataDF['5. volume'] = dataDF['5. volume'].astype(int)
     # (['1. open', '2. high', '3. low', '4. close'], 1
+    print(dataDF.dtypes)
     return dataDF
 
 
@@ -95,7 +100,12 @@ def calcDifVolumen(data):
     """
 
     # Primer paso verificar si está la columna Diferencia de Volumen
-    pass
+    if '5. volume' not in data.columns:
+        raise Exception("No se encontró la columna 'volume' ")
+    else:
+        # Luego agrego la columna con diferencia de volumen
+        data['difVolumen'] = data['5. volume'].diff()
+        return data
 
 def leerExcel(nombreArchivo):
     data = pd.read_excel(nombreArchivo)
@@ -105,5 +115,6 @@ def leerExcel(nombreArchivo):
 
 
 if __name__ == "__main__":
-    print(get_daily('AAPL'))
-    pass
+    a = get_daily('AAPL')
+    print(a)
+    print(calcDifVolumen(a))
