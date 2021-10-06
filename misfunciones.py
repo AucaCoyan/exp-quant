@@ -123,7 +123,45 @@ def leerExcel(nombreArchivo):
     return data
 
 
+def get_Alphavantage(symbol):
+    """Get JSON dict from Alphavantage
+
+    Args:
+        symbol ([type]): [description]
+    """
+    function = 'GLOBAL_QUOTE' 
+    urlBase = 'https://www.alphavantage.co/query' 
+    url = urlBase+ '?function=' + function
+    url += '&symbol=' + str(symbol)
+    url += '&apikey=' + token()
+    
+    r = requests.get(url)
+
+    # pido solamente los datos de precios
+    data = r.json()
+    return data
+
+
+def search_Alphavantage(keyword):
+    """Search from Alphavantage
+
+    Args:
+        symbol ([type]): [description]
+    """
+    function = 'SYMBOL_SEARCH' 
+    urlBase = 'https://www.alphavantage.co/query' 
+    url = urlBase+ '?function=' + function
+    url += '&keywords=' + str(keyword)
+    url += '&apikey=' + token()
+    
+    r = requests.get(url)
+
+    # pido solamente los datos de precios
+    data = r.json()
+    return data
+
+
 if __name__ == "__main__":
-    a = get_daily('AAPL')
+    a = search_Alphavantage('GGAL.ARG')
     print(a)
-    print(calcDifVolumen(a))
+    # print(calcDifVolumen(a))
