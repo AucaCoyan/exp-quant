@@ -19,6 +19,8 @@ def arreglarData(data):
     Args:
         data ([type]): [description]
     """
+    # ordeno segun la primera columna
+    data = data.sort_values('timestamp')
     # le doy formato float a la tabla OHLCV
     data['1. open'] =   data['1. open'].astype(float)
     data['2. high'] =   data['2. high'].astype(float)
@@ -85,6 +87,10 @@ def get_daily(symbol, output='compact'):
     data = r.json()['Time Series (Daily)']
     # le doy formato en pandas a partir del JSON
     dataDF = pd.DataFrame.from_dict(data, orient='index')
+    
+    # TODO: Necesito cambiar de nombre el index a 'timestamp'
+    dataDF = pd.Index.rename('timestamp', inplace=True)
+    
     # lo mando a arreglar data
     dataDF = arreglarData(dataDF)
     return dataDF
@@ -162,6 +168,6 @@ def search_Alphavantage(keyword):
 
 
 if __name__ == "__main__":
-    a = search_Alphavantage('GGAL.ARG')
+    a = get_daily('GGAL')
     print(a)
     # print(calcDifVolumen(a))
