@@ -11,6 +11,11 @@ def token():
     return tokenlist[0]
 
 
+def checkRequest():
+    # print(r.url)
+    # print(r.status_code)
+    pass
+
 def arreglarData(data):
     """Toma una matriz y la transforma para que la pueda usar mejor
     Orden:
@@ -20,7 +25,9 @@ def arreglarData(data):
         data ([type]): [description]
     """
     # ordeno segun la primera columna
+    data.index.name = 'timestamp'
     data = data.sort_values('timestamp')
+    data.index = pd.to_datetime(data.index)
     # TODO: tiene formato como datetime? sino agregarlo
     # le doy formato float a la tabla OHLCV
     data['1. open'] =   data['1. open'].astype(float)
@@ -39,7 +46,7 @@ def arreglarData(data):
     return data
 
 
-def get_intraday(symbol, interval='15min'):
+def get_intraday(symbol, interval='15min',  size='compact'):
     """Get intraday values from Alphavantage
 
     Args:
@@ -48,22 +55,22 @@ def get_intraday(symbol, interval='15min'):
     """
     function = 'TIME_SERIES_INTRADAY' 
 
-    # concatenar el link
-    urlBase = 'https://www.alphavantage.co/query'
-    url = urlBase+ '?function=' + function
-    url += '&symbol=' + str(symbol)
-    url += '&interval=' + interval
-    url += '&outputsize=compact'
-    url += '&apikey=' + token()
-    
-    # print(url)
-    # print('https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=IBM&interval=5min&apikey=demo')
-    # acá hago el llamado/request
+    # acá hago el request
+    url = 'http://www.alphavantage.co/query'
+    parametros = {'function' : function,
+                  'symbol' : symbol,
+                  'interval' : interval,
+                  'outputsize' : size,
+                  'apikey' : token()
+                }
+    r = requests.get(url, params=parametros)
+    print(r.url)
 
-    r = requests.get(url)
-
+    # pido solamente los datos de precios
     # TODO: todavia tiene 15min de invervalo, hacer el ciclo para ponerlo como argumento de la funcion
     data = r.json()['Time Series (15min)']
+
+    # lo convierto en un DF
     dataDF = pd.DataFrame.from_dict(data, orient='index')
     dataDF = arreglarData(dataDF)
     return dataDF
@@ -80,7 +87,7 @@ def get_daily(symbol, output='compact'):
     urlBase = 'https://www.alphavantage.co/query' 
     url = urlBase+ '?function=' + function
     url += '&symbol=' + str(symbol)
-    url += '&outputsize=compact'
+    url += '&outputsize=' + output
     url += '&apikey=' + token()
     
     r = requests.get(url)
@@ -98,9 +105,38 @@ def get_daily(symbol, output='compact'):
     return dataDF
 
 
-def getDailyAdj(symbol, size):
-#    return dataDF
-    pass
+def getDailyAdj(symbol, size='compact'):
+    """Get the daily values, and adjust them.
+
+    Args:
+        symbol (str): ticker to look for
+        size (str): compact
+
+    Returns:
+        [type]: [description]
+    """
+    function='TIME_SERIES_DAILY_ADJUSTED'
+
+    # acá hago el request
+    url = 'http://www.alphavantage.co/query'
+    parametros = {'function' : function,
+                  'symbol' : symbol,
+                  'outputsize' : size,
+                  'apikey' : token()
+                }
+    r = requests.get(url, params=parametros)
+
+    # pido solamente los datos de precios
+    data = r.json()['Time Series (Daily)']
+
+    # lo convierto en un DF
+    dataDF = pd.DataFrame.from_dict(data, orient='index')
+    
+    # FIXME tiene 8 columnas: OHLC + ajusted close + voluen (fuera de lugar) + dividend amount + split coeficient
+    # dataDF = arreglarData(dataDF)
+    
+    # data.columns = []
+    return dataDF
 
 
 def AgregarMediaMovil(data, periodos):
@@ -175,33 +211,8 @@ def search_Alphavantage(keyword):
 
 
 if __name__ == "__main__":
-    symbol = 'AAPL'
-    size = 'compact'
-    
-    function='TIME_SERIES_DAILY_ADJUSTED'
-    url = 'http://www.alphavantage.com/query'
-    parametros = {'function' : function,
-                  'symbol' : symbol,
-                  'outputsize' : size,
-                  'apikey' : token()
-                }
-    r = requests.get(url, params=parametros)
-    print(r.url)
-    print(r.status_code)
 
-# https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=IBM&outputsize=compact&apikey=demo
-# http://www.alphavantage.com/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=IBM&outputsize=compact&apikey=ZOW97SMSE5U3FPYU
-# https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=IBM&outputsize=compact&apikey=ZOW97SMSE5U3FPYU
-    data = r.json()['Time Series (Daily)']
-    dataDF = pd.DataFrame.from_dict(data, orient='index')
-    dataDF = dataDF.astype('float')
-    dataDF.index.name = 'Date'
-    # data.columns = []
-    dataDF = dataDF.sort_values('Date', ascending=True).round(2)
-    dataDF.index = pd.to_datetime(dataDF.index)
-    
-   
-    # a = getDailyAdj('AAPL', 'compact')
-
-    print(dataDF)
+    a = search_Alphavantage('galicia')
+    #a = getDailyAdj('IBM', 'compact')
+    print(a)
     # print(calcDifVolumen(a))
