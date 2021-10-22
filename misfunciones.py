@@ -8,7 +8,7 @@ def token():
     TODO: add secrets library
     """
     tokenlist = ['2RG2NEF3IPXMIPX3', 'ZOW97SMSE5U3FPYU']
-    return tokenlist[1]
+    return tokenlist[0]
 
 
 def arreglarData(data):
@@ -21,6 +21,7 @@ def arreglarData(data):
     """
     # ordeno segun la primera columna
     data = data.sort_values('timestamp')
+    # TODO: tiene formato como datetime? sino agregarlo
     # le doy formato float a la tabla OHLCV
     data['1. open'] =   data['1. open'].astype(float)
     data['2. high'] =   data['2. high'].astype(float)
@@ -61,6 +62,7 @@ def get_intraday(symbol, interval='15min'):
 
     r = requests.get(url)
 
+    # TODO: todavia tiene 15min de invervalo, hacer el ciclo para ponerlo como argumento de la funcion
     data = r.json()['Time Series (15min)']
     dataDF = pd.DataFrame.from_dict(data, orient='index')
     dataDF = arreglarData(dataDF)
@@ -94,6 +96,11 @@ def get_daily(symbol, output='compact'):
     # lo mando a arreglar data
     dataDF = arreglarData(dataDF)
     return dataDF
+
+
+def getDailyAdj(symbol, size):
+#    return dataDF
+    pass
 
 
 def AgregarMediaMovil(data, periodos):
@@ -168,6 +175,33 @@ def search_Alphavantage(keyword):
 
 
 if __name__ == "__main__":
-    a = get_daily('GGAL')
-    print(a)
+    symbol = 'AAPL'
+    size = 'compact'
+    
+    function='TIME_SERIES_DAILY_ADJUSTED'
+    url = 'http://www.alphavantage.com/query'
+    parametros = {'function' : function,
+                  'symbol' : symbol,
+                  'outputsize' : size,
+                  'apikey' : token()
+                }
+    r = requests.get(url, params=parametros)
+    print(r.url)
+    print(r.status_code)
+
+# https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=IBM&outputsize=compact&apikey=demo
+# http://www.alphavantage.com/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=IBM&outputsize=compact&apikey=ZOW97SMSE5U3FPYU
+# https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=IBM&outputsize=compact&apikey=ZOW97SMSE5U3FPYU
+    data = r.json()['Time Series (Daily)']
+    dataDF = pd.DataFrame.from_dict(data, orient='index')
+    dataDF = dataDF.astype('float')
+    dataDF.index.name = 'Date'
+    # data.columns = []
+    dataDF = dataDF.sort_values('Date', ascending=True).round(2)
+    dataDF.index = pd.to_datetime(dataDF.index)
+    
+   
+    # a = getDailyAdj('AAPL', 'compact')
+
+    print(dataDF)
     # print(calcDifVolumen(a))
