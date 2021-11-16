@@ -212,7 +212,7 @@ def search_Alphavantage(keyword):
 
 if __name__ == "__main__":
 
-    a = search_Alphavantage('galicia')
-    #a = getDailyAdj('IBM', 'compact')
+#    a = search_Alphavantage('galicia')
+    a = getDailyAdj('GGAL', 'compact')
     print(a)
     # print(calcDifVolumen(a))
